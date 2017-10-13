@@ -1,0 +1,49 @@
+{% extends 'df_goods/base.html' %}
+{% block detail2 %} 
+
+<div class="r_wrap fr clearfix">
+			<div class="sort_bar">
+				<a href="/list{{typeinfo.id}}_1_1/" 
+				{% if sort == "1"%} 
+				class="active" 
+				{% endif %}
+				>默认</a>
+				<a href="/list{{typeinfo.id}}_1_2/" {% if sort == "2"%} class="active" {% endif %} >价格</a>
+				<a href="/list{{typeinfo.id}}_1_3/"  {% if sort == "3"%} class="active" {% endif %}>人气</a>
+			</div>
+
+			<ul class="goods_type_list clearfix">
+			{% for fruit in glist%}
+				<li>
+					<a href="/{{fruit.id}}"><img src="/static/{{fruit.gpic}}"></a>
+					<h4><a href="/{{fruit.id}}">{{fruit.gtitle}}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{fruit.gprice}}</span>
+						<span class="unit">{{fruit.gunit}}/500g</span>
+						<a href="#" class="add_goods" title="加入购物车"></a>
+					</div>
+				</li>
+			{% endfor %}
+			
+			</ul>
+
+			<div class="pagenation">
+			
+				{% if glist.has_previous %}
+				<a href="/list{{tid}}_{{glist.previous_page_number}}_{{sort}}" class="active"><上一页</a>
+				{% endif %}
+				{% for page in plist %}
+				{% if page == glist.number%}
+				<a href="#" class="active">{{page}}</a>
+				{% else %}
+				<a href="/list{{tid}}_{{page}}_{{sort}}">{{page}}</a>
+				{% endif %}
+				{% endfor %}
+				{% if glist.has_next %}
+				<a href="/list{{tid}}_{{glist.next_page_number}}_{{sort}}" class="active">下一页></a>
+				{% endif %}
+			
+			</div>
+		</div>
+	</div>
+{% endblock detail2 %}

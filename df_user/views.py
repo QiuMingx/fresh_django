@@ -3,9 +3,11 @@ from django.shortcuts import render,redirect
 from models import *
 from hashlib import sha1
 from django.http import JsonResponse,HttpResponseRedirect
+from . import user_check
+from df_goods.models import *
 
 def register(request):
-	context = {'title':'用户注册'}
+	context = {'title':'用户注册','page_name':1}
 	return render(request,'df_user/register.html',context)
 	
 
@@ -43,7 +45,7 @@ def register_exist(request):
 
 def login(request):
 	uname = request.COOKIES.get('uname','')
-	context = {'title':'用户登陆','error_name':0, 'error_pwd':0, 'uname':uname}
+	context = {'title':'用户登陆','page_name':1,'error_name':0, 'error_pwd':0, 'uname':uname}
 	return render(request, 'df_user/login.html',context)
 
 def login_handle(request):
@@ -58,7 +60,9 @@ def login_handle(request):
 		s1= sha1()
 		s1.update(upwd)
 		if s1.hexdigest()==users[0].upwd:
-			red = HttpResponseRedirect('/user/info/')
+			url = request.COOKIES.get('url','/')
+			print(url)
+			red = HttpResponseRedirect(url)
 			if keep_uname!=0:
 				red.set_cookie('uname',uname)
 			else:
@@ -67,23 +71,38 @@ def login_handle(request):
 			request.session['user_name'] = uname
 			return red
 		else:
-			context = {'title':'用户登陆','error_name':0, 'error_pwd':1, 'uname':uname, 'upwd':upwd}
-			print(context)
+			context = {'title':'用户登陆','page_name':1,'error_name':0, 'error_pwd':1, 'uname':uname, 'upwd':upwd}
 			return render(request,'df_user/login.html',context)
 	else:
-		context = {'title':'用户登陆','error_name':1, 'error_pwd':0, 'uname':uname}
+		context = {'title':'用户登陆','page_name':1,'error_name':1, 'error_pwd':0, 'uname':uname}
 		return render(request,'df_user/login.html',context)
+
+@ user_check.login
 def info(request):
 	user_email = UserInfo.objects.get(id=request.session['user_id']).uemail
+	goods_ids = request.COOKIES.get('goods_ids')
+	
+	goods_id_list = goods_ids.split(',')
+	new_list = []
+	for goods_id in goods_id_list:
+		new_good = GoodsInfo.objects.get(id=goods_id)
+		new_list.append(new_good)
+
+
 	context = { 'title':'用户中心',
 				'uname':request.session['user_name'],
-				'uemail':user_email
+				'uemail':user_email,
+				'page_name':1,
+				'new_list':new_list,
 				}
 	return render(request,'df_user/user_center_info.html',context)
+
+@ user_check.login	
 def order(request):
-	context={'title':'用户中心'}
+	context={'title':'用户中心','page_name':1}
 	return render(request,'df_user/user_center_order.html',context)
 
+@ user_check.login
 def site(request):
 	user =  UserInfo.objects.get(id=request.session['user_id'])
 	if request.method == 'POST':
@@ -93,6 +112,9 @@ def site(request):
 		user.uyoubian = post.get('uyoubian')
 		user.uphone = post.get('uphone')
 		user.save()
-	context={'title':'用户中心','user':user}
+	context={'title':'用户中心','user':user,'page_name':1}
 	return render(request,'df_user/user_center_site.html',context)
 
+def logout(request):
+	request.session.flush()
+	return redirect('/')
