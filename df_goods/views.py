@@ -2,6 +2,7 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from models import *
+from df_cart.models import CartInfo
 
 def index(request):
 	typelist = TypeInfo.objects.all()
@@ -83,3 +84,20 @@ def detail(request,gid):
 
 	return respose
 
+def cart_count(request):
+	user_id = request.session['user_id']
+	count = CartInfo.objects.filter(user_id = user_id).count()
+	if count:
+		return count
+	else:
+		return 0
+
+from haystack.views import SearchView  
+  
+class MySeachView(SearchView):  
+    def extra_context(self):       #重载extra_context来添加额外的context内容  
+        context = super(MySeachView,self).extra_context()
+        context['title'] = '搜索'
+        context['guest_cart'] = 1     
+        context['cart_ount'] = cart_count(self.request )  
+        return context  

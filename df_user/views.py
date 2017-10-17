@@ -5,6 +5,8 @@ from hashlib import sha1
 from django.http import JsonResponse,HttpResponseRedirect
 from . import user_check
 from df_goods.models import *
+from df_order.models import *
+from django.core.paginator import Paginator
 
 def register(request):
 	context = {'title':'用户注册','page_name':1}
@@ -81,12 +83,13 @@ def login_handle(request):
 def info(request):
 	user_email = UserInfo.objects.get(id=request.session['user_id']).uemail
 	goods_ids = request.COOKIES.get('goods_ids')
-	
-	goods_id_list = goods_ids.split(',')
 	new_list = []
-	for goods_id in goods_id_list:
-		new_good = GoodsInfo.objects.get(id=goods_id)
-		new_list.append(new_good)
+	if goods_ids != None:
+		goods_id_list = goods_ids.split(',')
+	
+		for goods_id in goods_id_list:
+			new_good = GoodsInfo.objects.get(id=goods_id)
+			new_list.append(new_good)
 
 
 	context = { 'title':'用户中心',
@@ -98,8 +101,24 @@ def info(request):
 	return render(request,'df_user/user_center_info.html',context)
 
 @ user_check.login	
-def order(request):
-	context={'title':'用户中心','page_name':1}
+def order(request,pindex):
+	user_id = request.session['user_id']
+	orders = OrderInfo.objects.filter(user_id=user_id).order_by('-odate')
+	order_list =[]
+	for order in orders:
+		order_list.append([order.oid,order.orderdetail_set.all()])
+	if pindex == '':
+		pindex = 1
+	p = Paginator(orders, 2)
+	plist = p.page_range
+	olist = p.page(int(pindex))
+	context={'title':'用户中心',
+	'page_name':1,
+	'orders':orders,
+	'order_list':order_list,
+	'plist':plist,
+	'olist':olist,
+	}
 	return render(request,'df_user/user_center_order.html',context)
 
 @ user_check.login

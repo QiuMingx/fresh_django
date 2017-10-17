@@ -41,6 +41,8 @@ INSTALLED_APPS = (
     'tinymce',
     'df_goods',
     'df_cart',
+    'df_order',
+    'haystack',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -115,9 +117,18 @@ STATICFILES_DIRS=[
 MEDIA_ROOT = os.path.join(BASE_DIR,'static')
 #MEDIA_ROOT = '/var/www/freshdaily/static'
 
+
 TINYMCE_DEFAULT_CONFIG = {
     'theme': 'advanced',
     'width': 600,
     'height': 400,
 }
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_cn_backend.WhooshEngine',
+        'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
+    }
+}
+
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
