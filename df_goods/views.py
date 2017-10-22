@@ -85,11 +85,15 @@ def detail(request,gid):
 	return respose
 
 def cart_count(request):
-	user_id = request.session['user_id']
-	count = CartInfo.objects.filter(user_id = user_id).count()
-	if count:
-		return count
-	else:
+	try:
+		user_id = request.session['user_id']
+		count = CartInfo.objects.filter(user_id = user_id).count()
+		if count:
+			return count
+		else:
+			return 0
+	except Exception, e:
+		
 		return 0
 
 from haystack.views import SearchView  
